@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class SignUpDto
 {
+    
     #[Email]
     #[NotBlank(normalizer: 'trim')]
     #[Length(max: 180, maxMessage: 'The maximum length is 180 characters.')]
