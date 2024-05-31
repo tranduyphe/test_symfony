@@ -4,11 +4,14 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 class User
 {
+    public const ROLE_USER = 'ROLE_USER';
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -25,7 +28,7 @@ class User
 
     #[ORM\Column(type: 'json')]
     private array $roles = [];
-    
+
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $password = null;
 
@@ -34,7 +37,7 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $provider = null;
-    
+
     #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column(name: 'created_at', type: 'datetime')]
     private ?\DateTimeInterface $createdAt = null;
@@ -42,7 +45,7 @@ class User
     #[ORM\Column(name: 'deleted_at', type: 'datetime')]
     private ?\DateTimeInterface $deletedAt = null;
 
-    
+
     public function getId(): ?int
     {
         return $this->id;
@@ -215,7 +218,4 @@ class User
     {
         $this->deletedAt = $deletedAt;
     }
-
-    
-
 }

@@ -1,0 +1,24 @@
+user_index:
+    path: /users
+    controller: App\Controller\Api\UserController::index
+    methods: [GET]
+
+user_create:
+    path: /users
+    controller: App\Controller\Api\UserController::create
+    methods: [POST]
+
+user_show:
+    path: /users/{id}
+    controller: App\Controller\Api\UserController::show
+    methods: [GET]
+
+user_update:
+    path: /users/{id}
+    controller: App\Controller\Api\UserController::update
+    methods: [PUT]
+
+user_delete:
+    path: /users/{id}
+    controller: App\Controller\Api\UserController::delete
+    methods: [DELETE]
