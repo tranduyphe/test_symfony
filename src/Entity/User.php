@@ -5,10 +5,13 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const ROLE_USER = 'ROLE_USER';
     public const ROLE_ADMIN = 'ROLE_ADMIN';
@@ -18,6 +21,10 @@ class User
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    // #[Assert\Email(
+    //     message: 'The email {{ value }} is not a valid email.',
+    // )]
+    #[Assert\NotBlank(message: "Username cannot be null")]
     private ?string $email = null;
 
     #[ORM\Column(length: 180)]
@@ -42,9 +49,13 @@ class User
     #[ORM\Column(name: 'created_at', type: 'datetime')]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime')]
-    private ?\DateTimeInterface $deletedAt = null;
+    // #[ORM\Column(name: 'deleted_at', type: 'datetime')]
+    // private ?\DateTimeInterface $deletedAt = null;
 
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -203,19 +214,27 @@ class User
         $this->createdAt = $createdAt;
     }
 
-    /**
-     * @return \DateTimeInterface|null
-     */
-    public function getDeletedAt(): ?\DateTimeInterface
-    {
-        return $this->deletedAt;
-    }
+    // /**
+    //  * @return \DateTimeInterface|null
+    //  */
+    // public function getDeletedAt(): ?\DateTimeInterface
+    // {
+    //     return $this->deletedAt;
+    // }
+
+    // /**
+    //  * @param \DateTimeInterface|null $deletedAt
+    //  */
+    // public function setDeletedAt(?\DateTimeInterface $deletedAt): void
+    // {
+    //     $this->deletedAt = $deletedAt;
+    // }
 
     /**
-     * @param \DateTimeInterface|null $createdAt
+     * @see UserInterface
      */
-    public function setDeletedAt(?\DateTimeInterface $deletedAt): void
+    public function eraseCredentials(): void
     {
-        $this->deletedAt = $deletedAt;
+        // TODO: Implement eraseCredentials() method.
     }
 }

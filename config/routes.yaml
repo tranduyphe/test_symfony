@@ -5,3 +5,6 @@
 #     type: attribute
 #     api_login_check:
 #         path: /api/login_check
+api_users:
+    resource: '../config/routes/api/user.yaml'
+    type: yaml

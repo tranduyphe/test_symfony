@@ -5,11 +5,14 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
  * @extends ServiceEntityRepository<User>
  */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -51,11 +54,11 @@ class UserRepository extends ServiceEntityRepository
     public function hasByEmail(string $email): bool
     {
         return $this->createQueryBuilder('u')
-                ->select('COUNT(u.id)')
-                ->andWhere('u.email = :email')
-                ->setParameter(':email', $email)
-                ->getQuery()
-                ->getSingleScalarResult() > 0;
+            ->select('COUNT(u.id)')
+            ->andWhere('u.email = :email')
+            ->setParameter(':email', $email)
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
     }
 
     public function findAllUsers()
