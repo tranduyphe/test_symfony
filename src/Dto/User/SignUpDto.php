@@ -13,7 +13,7 @@ class SignUpDto
     
     #[Email]
     #[NotBlank(normalizer: 'trim')]
-    #[Length(max: 180, maxMessage: 'The maximum length is 180 characters.')]
+    #[Length(max: 30, maxMessage: 'The maximum length is 30 characters.')]
     private string $email;
 
     #[NotBlank(normalizer: 'trim')]

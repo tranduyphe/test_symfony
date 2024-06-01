@@ -8,6 +8,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -20,11 +23,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180, unique: true)]
-    // #[Assert\Email(
-    //     message: 'The email {{ value }} is not a valid email.',
-    // )]
-    #[Assert\NotBlank(message: "Username cannot be null")]
+    #[ORM\Column(length: 30, unique: true)]
+    #[Assert\Email(
+        message: 'The email {{ value }} is not a valid email.',
+    )]
     private ?string $email = null;
 
     #[ORM\Column(length: 180)]
@@ -49,8 +51,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'created_at', type: 'datetime')]
     private ?\DateTimeInterface $createdAt = null;
 
-    // #[ORM\Column(name: 'deleted_at', type: 'datetime')]
-    // private ?\DateTimeInterface $deletedAt = null;
 
     public function __construct()
     {
@@ -214,27 +214,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = $createdAt;
     }
 
-    // /**
-    //  * @return \DateTimeInterface|null
-    //  */
-    // public function getDeletedAt(): ?\DateTimeInterface
-    // {
-    //     return $this->deletedAt;
-    // }
-
-    // /**
-    //  * @param \DateTimeInterface|null $deletedAt
-    //  */
-    // public function setDeletedAt(?\DateTimeInterface $deletedAt): void
-    // {
-    //     $this->deletedAt = $deletedAt;
-    // }
-
     /**
      * @see UserInterface
      */
     public function eraseCredentials(): void
     {
         // TODO: Implement eraseCredentials() method.
+    }
+
+    /**
+     * @see ToArray
+     */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'email' => $this->getEmail(),
+            'first_name' => $this->getFirstName(),
+            'last_name' => $this->getLastName(),
+            'full_name' => $this->getFullName(),
+            'roles' => $this->getRoles()
+        ];
     }
 }

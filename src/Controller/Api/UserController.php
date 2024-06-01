@@ -10,82 +10,146 @@ use App\Service\User\Handler;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
     private $passwordEncoder;
+    private $userRepo;
+    private $entityManager;
     public function __construct(
         UserPasswordHasherInterface $passwordEncoder,
-        private readonly Handler $handler
+        private readonly Handler $handler,
+        EntityManagerInterface $entityManager,
     ) {
+        $this->entityManager = $entityManager;
         $this->passwordEncoder = $passwordEncoder;
+        $this->userRepo = $entityManager->getRepository(User::class);
     }
 
-    public function index(EntityManagerInterface $entityManager): JsonResponse
+    public function index(): JsonResponse
     {
         try {
-            $users = $entityManager->getRepository(User::class)->findAllUsers();
-            return $this->json(['message' => 'Lấy danh sách người dùng thành công', 'data' => $users], JsonResponse::HTTP_OK);
+            $users = $this->userRepo->findAllUsers();
+            if (!$users) {
+                return $this->json(['message' => 'No users found!', 'success' => false], JsonResponse::HTTP_BAD_REQUEST);
+            }
+            $listUsers = [];
+            foreach ($users as $user) {
+                $listUsers[] = $user->toArray();
+            }
+            return $this->json(['message' => 'Successfully retrieved user list!', 'data' => $listUsers], JsonResponse::HTTP_OK);
         } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json(['message' => $e->getMessage(), 'success' => false], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function create(Request $request): JsonResponse
+    public function create(Request $request, ValidatorInterface $validator): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
-            //dump($data);
             $dto = new SignUpDto();
             $dto->setEmail($data['email']);
             $dto->setFirstName($data['first_name']);
             $dto->setLastName($data['last_name']);
             $dto->setPassword($data['password']);
 
+            $errors = $validator->validate($dto);
+            if (count($errors) > 0) {
+
+                $errorsString = '';
+                foreach ($errors as $violation) {
+                    $errorsString .= $violation->getMessage() . ' ';
+                }
+                return new JsonResponse(['message' => $errorsString, 'success' => false], JsonResponse::HTTP_BAD_REQUEST);
+
+            }
+
             $response = $this->handler->handleCreateUser($dto);
 
             return $response;
         } catch (\Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage(), 'success' => false], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function show(User $user): JsonResponse
+    public function show(Request $request): JsonResponse
     {
         try {
-            return $this->json(['message' => 'Lấy thông tin người dùng thành công', 'data' => $user], JsonResponse::HTTP_OK);
+            $userId = $request->get('id');
+
+            if (!$userId) {
+                return $this->json(['message' => 'invalid Id!', 'success' => false], JsonResponse::HTTP_BAD_REQUEST);
+            }
+
+            $user = $this->userRepo->find($userId);
+
+            if (!$user) {
+                return $this->json(['message' => 'User not found!', 'success' => false], JsonResponse::HTTP_BAD_REQUEST);
+            }
+
+            return $this->json(['message' => 'User information retrieved successfully!', 'success' => true, 'data' => $user->toArray()], JsonResponse::HTTP_OK);
         } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json(['message' => $e->getMessage(), 'success' => false], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function update(Request $request, User $user, EntityManagerInterface $entityManager): JsonResponse
+    public function update(Request $request): JsonResponse
     {
         try {
+            $userId = $request->get('id');
+            if (!$userId)
+                return $this->json(['message' => 'invalid Id!', 'success' => false], JsonResponse::HTTP_BAD_REQUEST);
+
+            $user = $this->userRepo->find($userId);
+
+            if (!$user)
+                return $this->json(['message' => 'User not found!', 'success' => false], JsonResponse::HTTP_BAD_REQUEST);
+
             $data = json_decode($request->getContent(), true);
+            $password = $data['password'] ?? '';
+            $first_name = $data['first_name'] ?? '';
+            $last_name = $data['last_name'] ?? '';
 
-            $user->setUsername($data['username']);
-            $user->setPassword(
-                $this->passwordEncoder->hashPassword($user, $data['password'])
-            );
+            if (!empty($first_name)) {
+                $user->setFirstName($first_name);
+            }
 
-            $entityManager->flush();
+            if (!empty($last_name)) {
+                $user->setLastName($last_name);
+            }
 
-            return $this->json(['message' => 'Cập nhật người dùng thành công', 'data' => $user], JsonResponse::HTTP_OK);
+            if (!empty($password)) {
+                $encodedPassword = $this->passwordEncoder->hashPassword($user, $password);
+                $user->setPassword($encodedPassword);
+            }
+
+            $this->entityManager->flush();
+            return new JsonResponse(['message' => 'User updated successfully!', 'success' => true, 'data' => $user->toArray()], JsonResponse::HTTP_OK);
         } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json(['message' => $e->getMessage(), 'success' => false], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function delete(User $user, EntityManagerInterface $entityManager): JsonResponse
+    public function delete(request $request): JsonResponse
     {
         try {
-            $entityManager->remove($user);
-            $entityManager->flush();
+            $userId = $request->get('id');
 
-            return $this->json(['message' => 'Xóa người dùng thành công'], JsonResponse::HTTP_NO_CONTENT);
+            if (!$userId)
+                return $this->json(['message' => 'invalid Id!', 'success' => false], JsonResponse::HTTP_BAD_REQUEST);
+
+            $user = $this->userRepo->find($userId);
+
+            if (!$user)
+                return $this->json(['message' => 'User not found!', 'success' => false], JsonResponse::HTTP_BAD_REQUEST);
+
+            $this->entityManager->remove($user);
+            $this->entityManager->flush();
+
+            return $this->json(['message' => 'User deleted successfully!', 'success' => true], JsonResponse::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json(['message' => $e->getMessage(), 'success' => false], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

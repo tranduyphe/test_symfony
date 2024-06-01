@@ -1,10 +1,15 @@
-# controllers:
-#     resource:
-#         path: ../src/Controller/
-#         namespace: App\Controller
-#     type: attribute
-#     api_login_check:
-#         path: /api/login_check
+
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+api_login_check:
+    path: /api/login_check
+
 api_users:
     resource: '../config/routes/api/user.yaml'
+    type: yaml
+api_auth:
+    resource: '../config/routes/api/auth.yaml'
     type: yaml
