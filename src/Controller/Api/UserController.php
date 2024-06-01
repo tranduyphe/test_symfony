@@ -50,6 +50,7 @@ class UserController extends AbstractController
             $data = json_decode($request->getContent(), true);
             $dto = new SignUpDto();
             $dto->setEmail($data['email']);
+            $dto->setUsername($data['email']);
             $dto->setFirstName($data['first_name']);
             $dto->setLastName($data['last_name']);
             $dto->setPassword($data['password']);

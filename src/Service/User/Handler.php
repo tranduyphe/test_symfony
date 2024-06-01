@@ -27,6 +27,7 @@ class Handler
 
         $user = (new User())
             ->setEmail($dto->getEmail())
+            ->setUsername($dto->getUsername())
             ->setFirstName($dto->getFirstName())
             ->setLastName($dto->getLastName())
             ->setPassword($this->passwordHasher->getPasswordHasher(User::class)->hash($dto->getPassword()))
@@ -51,6 +52,7 @@ class Handler
                 $provider = $dto->getProvider() ? $dto->getProvider() : 'normal';
                 $user = (new User())
                     ->setEmail($dto->getEmail())
+                    ->setUsername($dto->getUsername())
                     ->setFirstName($dto->getFirstName())
                     ->setLastName($dto->getLastName())
                     ->setProvider($provider)
@@ -62,7 +64,7 @@ class Handler
                 $this->em->flush();
 
                 return new JsonResponse(
-                    ['message' => 'User registered successfully!', 'success' => true, 'data' => $user],
+                    ['message' => 'User registered successfully!', 'success' => true, 'data' => $user->toArray()],
                     JsonResponse::HTTP_CREATED
                 );
             }

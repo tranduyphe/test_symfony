@@ -17,6 +17,10 @@ class SignUpDto
     private string $email;
 
     #[NotBlank(normalizer: 'trim')]
+    #[Length(max: 150, maxMessage: 'The maximum length is 150 characters.')]
+    private string $username;
+
+    #[NotBlank(normalizer: 'trim')]
     #[Length(max: 50, maxMessage: 'The maximum length is 50 characters.')]
     private string $firstName;
 
@@ -39,6 +43,17 @@ class SignUpDto
     {
         $this->email = $email;
 
+        return $this;
+    }
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+  
+    public function setUsername(string $username): self
+    {
+        $this->username = $username;
+  
         return $this;
     }
 

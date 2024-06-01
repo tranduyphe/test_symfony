@@ -101,8 +101,11 @@ class AuthController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true);
+            
+       
             $dto = new SignUpDto();
             $dto->setEmail($data['email']);
+            $dto->setUsername($data['email']);
             $dto->setFirstName($data['first_name']);
             $dto->setLastName($data['last_name']);
             $dto->setPassword($data['password']);
@@ -125,6 +128,23 @@ class AuthController extends AbstractController
             return new JsonResponse(['message' => $e->getMessage(), 'success' => false], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    
+    public function decodeToken(Request $request)
+    {
+      
+        try {
+            $data = json_decode($request->getContent(), true);
+            $token = $data['token'];
+            $data = $this->jwtEncoder->decode($token);
+            return new JsonResponse(['decoded' => $data, 'success' => true], JsonResponse::HTTP_OK);
+            
+        } catch (\Exception $e) { 
+            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        
+    }
+
     public function user(Request $request): JsonResponse
     {
         try {

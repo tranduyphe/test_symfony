@@ -13,3 +13,8 @@ api_users:
 api_auth:
     resource: '../config/routes/api/auth.yaml'
     type: yaml
+    
+app.swagger_ui:
+    path: /api/doc
+    methods: GET
+    defaults: { _controller: nelmio_api_doc.controller.swagger_ui }

@@ -22,4 +22,8 @@ auth_info:
     path: /api/auth/info
     controller: App\Controller\Api\AuthController::user
     methods: [GET]
+decode_token:
+    path: /api/decode-token
+    controller: App\Controller\Api\AuthController::decodeToken
+    methods: [POST]
 

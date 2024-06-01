@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
+#[ORM\Table(name: '`users`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const ROLE_USER = 'ROLE_USER';
@@ -28,6 +28,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         message: 'The email {{ value }} is not a valid email.',
     )]
     private ?string $email = null;
+
+    #[ORM\Column(length: 150, unique: true)]
+    private ?string $username = null;
 
     #[ORM\Column(length: 180)]
     private ?string $firstName = null;
@@ -71,6 +74,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->email = $email;
 
+        return $this;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+  
+    public function setUsername(string $username): self
+    {
+        $this->username = $username;
+  
         return $this;
     }
 
@@ -138,7 +153,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->roles;
     }
 
-    public function setRoles(array $roles): self
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
 
